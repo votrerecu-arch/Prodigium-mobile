@@ -11,9 +11,10 @@ class Nexus:
         return {"status": "success", "result": f"Outil {request.tool_name} exécuté."}
 
     async def live_logistics_scan(self) -> Dict[str, Any]:
-        # Données à jour basées sur les dernières recherches (Mai 2026)
+        # Données dynamiques basées sur la date actuelle
+        now = datetime.datetime.now()
         return {
-            "timestamp": datetime.datetime.now().isoformat(),
+            "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
             "status": "Scan complet effectué",
             "data": {
                 "top_platform": {

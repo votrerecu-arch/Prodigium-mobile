@@ -1,0 +1,6 @@
+fastapi
+pydantic-settings
+uvicorn
+rich
+python-multipart
+python-dotenv
