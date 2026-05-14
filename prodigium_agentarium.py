@@ -1,5 +1,6 @@
 from typing import List, Tuple, Optional, Any
 import asyncio
+from prodigium_nexus import Nexus
 
 class Agent:
     def __init__(self, name: str, specialization: str):
@@ -12,21 +13,18 @@ class Agent:
 class KmerSourceAgent(Agent):
     def __init__(self):
         super().__init__("KmerSource", "Expert en sourcing et logistique Chine-Cameroun")
+        self.nexus = Nexus()
         self.contacts = {
             "WACO CARGO": {
-                "description": "Spécialiste du fret aérien et maritime de la Chine vers le Cameroun.",
+                "description": "Fret aérien et maritime. Très fiable.",
                 "contacts": {
-                    "Yaoundé": "+237 679 24 06 89 / 671 98 11 11",
-                    "Douala": "+237 679 24 07 23 / 683 71 92 80",
+                    "Yaoundé (Hollando)": "+237 679 24 06 89",
+                    "Douala (Akwa)": "+237 679 24 07 23",
                     "Chine": "+86 137 5420 2192"
                 }
             },
-            "Sino Shipping": {
-                "description": "Transitaire international couvrant la route Chine-Afrique.",
-                "site": "https://fr.sino-shipping.com"
-            },
-            "Handling and Transport SARL": {
-                "description": "Accompagnement complet : sourcing, logistique et douane.",
+            "Handling and Transport": {
+                "description": "Sourcing, logistique et dédouanement.",
                 "site": "https://handlingandtransport.com"
             }
         }
@@ -34,16 +32,37 @@ class KmerSourceAgent(Agent):
     async def process(self, message: str) -> str:
         msg_lower = message.lower()
 
-        if any(keyword in msg_lower for keyword in ["chine", "achat", "fournisseur", "commander", "alibaba", "1688"]):
-            response = "### 🇨🇲 Guide d'Achat en Chine pour le Cameroun\n\n"
-            response += "Pour réussir vos achats en Chine et vous faire livrer en toute sécurité au Cameroun, voici les étapes recommandées :\n\n"
-            response += "1. **Sourcing** : Utilisez des plateformes fiables comme **Alibaba** (B2B), **1688.com** (meilleurs prix, nécessite un agent) ou **AliExpress**.\n"
-            response += "2. **Paiement** : Utilisez Alipay, WeChat Pay (via agent) ou des cartes virtuelles internationales.\n"
-            response += "3. **Expédition (Le Transitaire)** : C'est l'étape la plus cruciale. Voici des contacts sûrs qui livrent au Cameroun :\n\n"
+        if any(keyword in msg_lower for keyword in ["scan", "jour", "donnée", "donnee"]):
+            scan_result = await self.nexus.live_logistics_scan()
+            data = scan_result["data"]
+            platform = data["top_platform"]
+
+            response = "### 🔍 Résultats du Scan en Temps Réel (Chine-Cameroun)\n\n"
+            response += f"Dernière mise à jour : {scan_result['timestamp']}\n\n"
+            response += f"**1. Plateforme de référence (Facile et Public) :**\n"
+            response += f"👉 **[{platform['name']}]({platform['url']})**\n"
+            response += f"- *Description* : {platform['description']}\n\n"
+
+            response += "**2. Alternatives pour le suivi de colis :**\n"
+            for alt in data["alternative_tracking"]:
+                response += f"- [{alt['name']}]({alt['url']})\n"
+
+            response += f"\n**3. État du Marché :**\n"
+            response += f"- **Tarifs** : {data['rates_trend']}\n"
+            response += f"- **Délais** : {data['average_delivery']}\n"
+            response += f"- **Sourcing recommandé** : {', '.join(data['recommended_sourcing'])}\n\n"
+            response += "Utilisez ces liens pour vos achats et le suivi de vos marchandises."
+            return response
+
+        if any(keyword in msg_lower for keyword in ["chine", "achat", "fournisseur", "commander", "alibaba", "1688", "aide"]):
+            response = "### 🇨🇲 Comment acheter en Chine depuis le Cameroun\n\n"
+            response += "Voici les meilleures ressources pour vos achats :\n\n"
+            response += "1. **Sourcing** : Utilisez **1688.com** pour les meilleurs prix d'usine ou **Alibaba**.\n"
+            response += "2. **Logistique (Contacts Sûrs)** :\n\n"
 
             for name, info in self.contacts.items():
                 response += f"#### {name}\n"
-                response += f"- *Description* : {info['description']}\n"
+                response += f"- {info['description']}\n"
                 if "contacts" in info:
                     for loc, num in info["contacts"].items():
                         response += f"  - **{loc}** : {num}\n"
@@ -51,11 +70,13 @@ class KmerSourceAgent(Agent):
                     response += f"  - **Site** : {info['site']}\n"
                 response += "\n"
 
-            response += "4. **Réception** : Vos colis arrivent généralement à Douala ou Yaoundé. Le transitaire gère souvent le dédouanement (système 'tout compris' au kg ou CBM).\n\n"
-            response += "Avez-vous besoin d'un conseil spécifique sur un produit ou une plateforme ?"
+            response += "3. **Suivi & Plateforme En Ligne** :\n"
+            response += "Pour suivre vos colis en temps réel, utilisez la plateforme publique :\n"
+            response += "👉 **[Yemba Express](https://yemba.com)**\n\n"
+            response += "Dites-moi **'scan complet'** pour obtenir les tarifs et délais à jour."
             return response
 
-        return "Je suis l'assistant KmerSource. Je peux vous aider à importer des marchandises depuis l'étranger, particulièrement de la Chine vers le Cameroun. Que souhaitez-vous acheter ?"
+        return "Je suis l'assistant KmerSource. Je vous aide pour vos achats à l'étranger. Essayez de demander un 'scan complet'."
 
 class Orchestrator:
     def __init__(self):
@@ -66,15 +87,14 @@ class Orchestrator:
         self.agent_count = len(self.agents)
 
     async def route(self, message: str, auth: Any, thinking_mode: bool = False) -> Tuple[str, List[str], Optional[str]]:
-        # Routage intelligent : si on parle d'achat/chine, on utilise KmerSource
         msg_lower = message.lower()
-        target_agent = self.agents[1] # Logistique par défaut
+        target_agent = self.agents[1]
 
-        if any(keyword in msg_lower for keyword in ["chine", "achat", "fournisseur", "commander", "cameroun", "import"]):
-            target_agent = self.agents[0] # KmerSource
+        if any(keyword in msg_lower for keyword in ["chine", "achat", "fournisseur", "commander", "cameroun", "import", "scan", "jour", "aide"]):
+            target_agent = self.agents[0]
 
         activated_agents = [target_agent.name]
         response = await target_agent.process(message)
-        thinking = f"Activation de l'agent {target_agent.name} pour une expertise spécifique..." if thinking_mode else None
+        thinking = f"Analyse par l'agent {target_agent.name}..." if thinking_mode else None
 
         return response, activated_agents, thinking

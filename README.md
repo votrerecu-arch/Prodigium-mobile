@@ -3,9 +3,10 @@
 Une intelligence artificielle conçue pour aider les Camerounais à effectuer des achats à l'étranger (notamment en Chine) avec des contacts fiables et une livraison directe au Cameroun.
 
 ## Fonctionnalités
-- **Sourcing** : Conseils sur les meilleures plateformes (Alibaba, 1688, etc.).
-- **Logistique** : Liste de transitaires fiables (WACO CARGO, Sino Shipping, etc.) avec contacts WhatsApp/Téléphone.
-- **Accompagnement** : Guide étape par étape du paiement à la réception du colis à Douala ou Yaoundé.
+- **Scan complet** : Obtenez les données les plus récentes sur les tarifs de fret et les délais en demandant un "scan complet".
+- **Plateforme Publique** : Recommandation et liens vers des outils de suivi en ligne faciles à utiliser (**Yemba Express**, **DamouCargo**).
+- **Sourcing Assisté** : Conseils sur les meilleures plateformes (**1688**, **Alibaba**, **AliExpress**).
+- **Contacts de Confiance** : Liste de transitaires vérifiés avec leurs numéros WhatsApp au Cameroun et en Chine.
 
 ## Installation
 
@@ -16,22 +17,20 @@ pip install fastapi pydantic-settings uvicorn rich
 ## Utilisation
 
 ### Mode Console (Interactif)
-Lancez l'IA directement dans votre terminal :
+Lancez l'IA directement dans votre terminal pour discuter :
 ```bash
 python3 main.py
 ```
+*Commande recommandée : "Fait un scan complet"*
 
-### Mode API
-Pour lancer le serveur API :
-1. Modifiez `prodigium_config.py` ou définissez `DEPLOY_MODE=api`.
-2. Lancez :
-```bash
-python3 main.py
-```
-L'API sera disponible sur `http://localhost:8000`. La documentation Swagger est accessible sur `/docs`.
+### Mode API (Public en ligne)
+Pour déployer l'IA en ligne en tant que plateforme publique :
+1. Assurez-vous que `DEPLOY_MODE` est réglé sur `api` dans `prodigium_config.py`.
+2. Déployez sur un service comme **Render**, **Railway** ou **Google Cloud Run**.
+3. L'API exposera des endpoints pour le chat (`/chat`) et la documentation automatique (`/docs`).
 
-## Structure du projet
-- `main.py` : Point d'entrée de l'application.
-- `prodigium_agentarium.py` : Orchestrateur et agents spécialisés (dont KmerSource).
-- `prodigium_config.py` : Paramètres du système.
-- `prodigium_models.py` : Modèles de données Pydantic.
+## Structure Technique
+- `main.py` : Serveur FastAPI et logique d'orchestration.
+- `prodigium_agentarium.py` : Intelligence métier de l'assistant KmerSource.
+- `prodigium_nexus.py` : Outils de scan logistique.
+- `prodigium_config.py` : Configuration système.

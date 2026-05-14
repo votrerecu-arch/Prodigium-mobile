@@ -1,4 +1,5 @@
 import uuid
+import os
 from typing import Optional
 
 class AuthInfo:
@@ -12,9 +13,12 @@ class AuthInfo:
 class LibertAS:
     def __init__(self):
         self.sessions = {}
+        # Load keys from environment for security
+        self.admin_key = os.getenv("PRODIGIUM_ADMIN_KEY")
+        self.admin_cert = os.getenv("PRODIGIUM_ADMIN_CERT")
 
     def authorize(self, certificate: str = None, api_key: str = None) -> AuthInfo:
-        if api_key == "admin-key" or certificate == "admin-cert":
+        if (self.admin_key and api_key == self.admin_key) or (self.admin_cert and certificate == self.admin_cert):
             return AuthInfo(level="ADMIN", is_authenticated=True)
         if api_key or certificate:
             return AuthInfo(level="VERIFIED", is_authenticated=True)

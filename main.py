@@ -35,22 +35,22 @@ nexus = Nexus()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialisation et nettoyage."""
-    print(f"☠️  PRODIGIUM v{settings.AI_VERSION} — INITIALISATION")
+    print(f"🇨🇲 {settings.AI_NAME} v{settings.AI_VERSION} — INITIALISATION")
     print(f"🔧 Mode : {settings.DEPLOY_MODE}")
     print(f"🧠 CORTEX : {settings.CORTEX_MODE}")
     print(f"🔐 LIBERTAS : {settings.LIBERTAS_DEFAULT_LEVEL}")
-    print(f"🤖 AGENTARIUM : 14 agents")
+    print(f"🤖 AGENTARIUM : {orchestrator.agent_count} agents")
     print(f"🔧 NEXUS : outils intégrés")
-    print("✅ PRODIGIUM prêt.")
+    print(f"✅ {settings.AI_NAME} prêt.")
     
     yield
     
-    print("☠️  PRODIGIUM arrêté.")
+    print(f"🛑 {settings.AI_NAME} arrêté.")
 
 app = FastAPI(
-    title=f"☠️ PRODIGIUM — {settings.AI_NAME}",
+    title=f"🇨🇲 {settings.AI_NAME}",
     version=settings.AI_VERSION,
-    description="AI de sécurité offensive — La génération qui dépasse tout.",
+    description="Assistant IA pour l'achat et la logistique Chine-Cameroun.",
     lifespan=lifespan
 )
 
@@ -106,8 +106,8 @@ async def root():
     return {
         "ai": settings.AI_NAME,
         "version": settings.AI_VERSION,
-        "status": "☠️ ONLINE",
-        "message": "PRODIGIUM est opérationnel. La génération qui dépasse tout.",
+        "status": "✅ ONLINE",
+        "message": f"{settings.AI_NAME} est opérationnel. Votre partenaire pour l'import-export.",
         "docs": "/docs",
         "endpoints": {
             "chat": "/chat (POST)",
@@ -240,11 +240,6 @@ async def execute_tool(request: ToolExecuteRequest, auth=Depends(get_auth)):
     return result
 
 
-@app.get("/cve/search", tags=["NEXUS"])
-async def search_cve(query: str = Query("", description="Recherche CVE"), auth=Depends(get_auth)):
-    """Recherche de CVEs récentes."""
-    result = await nexus.search_cve(query)
-    return result
 
 
 # ====================
@@ -254,7 +249,7 @@ if __name__ == "__main__":
     import uvicorn
     import sys
     
-    print(f"☠️  PRODIGIUM v{settings.AI_VERSION}")
+    print(f"🇨🇲 {settings.AI_NAME} v{settings.AI_VERSION}")
     print("=" * 50)
     
     # Mode console interactif
@@ -275,13 +270,13 @@ if __name__ == "__main__":
             
             while True:
                 try:
-                    user_input = console.input("[bold cyan]☠️ [/bold cyan] ").strip()
+                    user_input = console.input("[bold cyan]🇨🇲 [/bold cyan] ").strip()
                     
                     if not user_input:
                         continue
                         
                     if user_input.lower() in ("exit", "quit", "q"):
-                        print("☠️  PRODIGIUM terminé.")
+                        print(f"🛑 {settings.AI_NAME} terminé.")
                         break
                     
                     if user_input.lower() == "auth":
