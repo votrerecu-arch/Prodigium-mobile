@@ -322,7 +322,7 @@ if __name__ == "__main__":
             pass
     else:
         uvicorn.run(
-            "prodigium_api:app",
+            "main:app",
             host=settings.API_HOST,
             port=settings.API_PORT,
             reload=False,
