@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: kmersource-ai
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEPLOY_MODE
+        value: api
+      - key: PRODIGIUM_ADMIN_KEY
+        generateValue: true
+      - key: PRODIGIUM_ADMIN_CERT
+        generateValue: true
